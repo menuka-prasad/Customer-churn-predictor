@@ -35,6 +35,7 @@ pnpm-debug.log*
 # Environment files
 .env
 .env.*
+LearningPoints.md
 
 # IDE / OS files
 .vscode/

@@ -11,3 +11,4 @@ mlflow
 pytest
 httpx
 python-multipart
+seaborn
