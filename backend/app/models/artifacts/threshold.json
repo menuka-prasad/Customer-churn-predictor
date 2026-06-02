@@ -1,0 +1,5 @@
+{
+  "threshold": 0.3093,
+  "target_recall": 0.75,
+  "precision_at_threshold": 0.5194
+}

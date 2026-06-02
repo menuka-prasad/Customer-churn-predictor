@@ -12,6 +12,9 @@ import joblib
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_validate
+from xgboost import XGBClassifier
 from sklearn.metrics import (
     classification_report,
     confusion_matrix,
@@ -20,6 +23,7 @@ from sklearn.metrics import (
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 from backend.app.services.feature_engineering import (
     engineer_features
@@ -102,20 +106,79 @@ preprocessor = create_preprocessor(
     categorical_features
 )
 
+# -----------------------------
+# MODELS
+# -----------------------------
+
+models = {
+    "LogisticRegression": LogisticRegression(max_iter=1000),
+    "RandomForest": RandomForestClassifier(
+    n_estimators=100,
+    max_depth=10,
+    min_samples_leaf=4,
+    random_state=42
+    ),
+    "XGBoost": XGBClassifier(
+    max_depth=4,
+    learning_rate=0.1,
+    n_estimators=100,
+    eval_metric="logloss",
+    random_state=42
+    )
+}
 
 # -----------------------------
 # MODEL PIPELINE
 # -----------------------------
+best_score = 0;
+best_model = None;
+model_pipeline = None;
 
-model_pipeline = Pipeline([
+
+for model_name, model_instance in models.items():
+    current_pipeline = Pipeline([
     ("preprocessor", preprocessor),
     (
         "model",
-        LogisticRegression(max_iter=1000)
+        model_instance
     )
-])
+    ])
+    results = cross_validate(
+        current_pipeline,
+        X_train,
+        y_train,
+        cv=5,
+        scoring=["recall", "f1"],
+        return_train_score=True # only set true if need to check for overfitting
+    )
+    
+    combined_score = (0.6 * results["test_recall"].mean()) + (0.4 * results["test_f1"].mean())
+    if combined_score > best_score:
+        best_score = combined_score
+        model_pipeline = current_pipeline
+        best_model = model_name
+    
+    print("="*40)
+    
+    # 3. Calculate and print the metrics properly
+    print(f"--- {model_name} ---")
+    
+    mean_recall = results["test_recall"].mean()
+    std_recall = results["test_recall"].std()
+    print(f"Recall: {mean_recall:.4f} (+/- {std_recall:.4f})")
+    
+    mean_f1 = results["test_f1"].mean()
+    std_f1 = results["test_f1"].std()
+    print(f"F1 Score: {mean_f1:.4f} (+/- {std_f1:.4f})\n")
+    
+    print("="*40)
+    
+    train_recall_mean = results["train_recall"].mean()
+    print(f"Train Recall: {train_recall_mean:.4f} | Test Recall: {mean_recall:.4f} | Gap: {train_recall_mean - mean_recall:.4f}")
 
-
+print("="*40)
+print(f"Best Model: {best_model}")
+print(f"Recall score of Best model: {best_score}")
 # -----------------------------
 # TRAIN MODEL
 # -----------------------------
