@@ -114,4 +114,12 @@ X_test_df = pd.DataFrame(
 )
 idx = 0  # first customer in test set
 
-shap.plots.waterfall(explainer(X_test_df)[idx])
+
+shap_explanation = shap.Explanation(
+    values=shap_values,
+    base_values=explainer.expected_value,
+    data=X_test_transformed,
+    feature_names=feature_names
+)
+
+shap.plots.waterfall(shap_explanation[idx])

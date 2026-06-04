@@ -131,6 +131,71 @@ shap_values = explainer.shap_values(X_test_transformed)
 ```
 #### Points
 - Note we're using `TreeExplainer` — this is specific to tree based models like XGBoost. Different model types need different explainers. We have to Keep that in mind.
-- also here now `X_test_transformed` is a numpy array now, not a DataFrame. The column names are gone. But our preprocessor remembers all the features. Actually it not remember original columns. it remembers columns that after encoding. so that means it increased column count. because if there is categorical column with 3 unique values then for that feature one hot encoding will create 2 columns. for 5 unique items it creates 4 columns. so that means it increases column count.
+- also here now `X_test_transformed` is a numpy array now, not a DataFrame. The column names are gone. But our preprocessor remembers all the features. Actually it not remember original columns. it remembers columns that after encoding. so that means it increased column count. *for example if there is categorical column with 3 unique values then for that feature one hot encoding will create 3 columns. for 5 unique items it creates 5 columns. but we can also drop one column for binary features (lets handle that later)* so that means it increases column count.
 here we got 53 columns after encoding.
+Also we have to keep in mind that after encoding how column names change like `"Contract" with 3 unique values becomes 3 separate binary columns: Contract_Month-to-month, Contract_One year, Contract_Two year. `
+
+#### How to read SHAP values?
+
+![alt text](shap_value_chart.png)
+
+Each dot is one customer from your test set. The X axis is the SHAP value — how much that feature pushed the prediction toward churn (positive) or away from churn (negative). 
+**The colour is the feature value**
+ - red = high,
+ -  blue = low.
+
+**Examples**
+- So look at `cat__Contract_Month-to-month`. Red dots are on the right (positive SHAP). That means: high value of this feature (= is month-to-month) strongly pushes toward churn. Makes perfect sense.
+- Now look at `num__tenure`. Red dots are on the left. High tenure pushes away from churn. Long-term customers are loyal.
+- Look at `cat__OnlineSecurity_No`, it makes customers churn more since red dots are in right. but not impactful as month-to-month
+- Our engineered feature `HighRiskContract` doesn't appear in the top features, but `cat__Contract_Month-to-month` does. What could be the reason for this?
+`HighRiskContract` isn't useless, it is *month-to-month* customers encoded as 0/1.
+The issue is that our preprocessor then OneHotEncoded it again, creating `cat__HighRiskContract_0` and `cat__HighRiskContract_1`. Meanwhile the original Contract column also exists as `cat__Contract_Month-to-month.`
+So we essentially have the same information twice. The model already gets everything it needs from the original Contract column — our engineered version added no new signal.
+
+This is a really important lesson: **feature engineering only adds value when it captures something the raw features don't already express.**
+
+*our other features though — TotalServices, IsNewCustomer, HasProtection — those do add value because they combine multiple columns into a single signal the model couldn't easily derive itself.*
+
+- for `cat__InternetService_Fiber optic`. Red dots are on the right. Fiber optic customers churn more. But Why?
+  - fiber optic customers are likely more tech-savvy, which means they actively compare competitors and switch when they find a better deal. DSL customers might just stick with what works.
+  
+**So these type of analysis can be made from the SHAP value grapjh**
+
+
+#### Now let's talk about what's missing from our SHAP analysis that makes it incomplete for a real product.
+Right now we  have a global summary — feature importance across all customers. But a telecom retention team doesn't work with averages. They work with individual customers. They want to know: *Why is this specific customer predicted to churn?*
+
+SHAP can do that too with a **force plot** — it shows exactly which features pushed a single customer's prediction up or down.
+
+- example
+```python
+X_test_df = pd.DataFrame(
+    X_test_transformed,
+    columns=feature_names
+)
+# Single customer explanation
+idx = 0  # first customer in test set
+shap.plots.waterfall(explainer(X_test_transformed)[idx])
+```
+
+here first converted `X_test_transformed` into dataframe with column names. and then we ploted force plot.
+
+![alt text](force_plot_customer_1.png)
+
+Now we can read it properly. And this customer's story is actually really clear.
+
+Everything is blue (pushing toward no churn). Look at the top factors:
+- Not on month-to-month contract (-0.92)
+- High tenure (-0.50)
+- Two year contract (-0.38)
+  
+This customer is clearly a loyal, long-term customer on a two-year contract. The model is very confident they won't churn, **f(x) = -4.278** is far into the negative (no churn) territory.
+
+The one red bar, `OnlineSecurity_No (+0.19)` — is a tiny churn signal but completely overwhelmed by loyalty factors.
+
+so here SHAP saved the business from wasting a retention call on a loyal customer. Multiply that across thousands of customers and you're saving serious money and effort.
+
+**So now we know how to use SHAP analysis also to get business insights**
+Next lets move to create `evaluate.py`
 

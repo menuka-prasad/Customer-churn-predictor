@@ -186,44 +186,7 @@ print(f"Recall score of Best model: {best_score}")
 model_pipeline.fit(X_train, y_train)
 
 
-# -----------------------------
-# PREDICTIONS
-# -----------------------------
 
-y_pred = model_pipeline.predict(X_test)
-
-y_prob = model_pipeline.predict_proba(X_test)[:, 1]
-
-
-# -----------------------------
-# EVALUATION
-# -----------------------------
-
-print("\nClassification Report:\n")
-print(classification_report(y_test, y_pred))
-
-roc_auc = roc_auc_score(y_test, y_prob)
-
-print(f"\nROC-AUC Score: {roc_auc:.4f}")
-
-
-# -----------------------------
-# CONFUSION MATRIX
-# -----------------------------
-
-cm = confusion_matrix(y_test, y_pred)
-
-sns.heatmap(
-    cm,
-    annot=True,
-    fmt="d"
-)
-
-plt.xlabel("Predicted")
-plt.ylabel("Actual")
-plt.title("Confusion Matrix")
-
-plt.show()
 
 
 # -----------------------------
