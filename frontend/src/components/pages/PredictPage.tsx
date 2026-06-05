@@ -1,14 +1,16 @@
+'use client';
+
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ArrowRight, ClipboardCheck, BarChart3 } from 'lucide-react';
-import { CustomerForm } from '../components/CustomerForm';
-import { PredictionResults } from '../components/PredictionResults';
-import type { CustomerData, PredictionResult } from '../components/ChurnDashboard';
-import { usePredictionStore, buildShapFor } from '../context/PredictionStore';
+import { CustomerForm } from '../CustomerForm';
+import { PredictionResults } from '../PredictionResults';
+import type { CustomerData, PredictionResult } from '../ChurnDashboard';
+import { usePredictionStore, buildShapFor } from '../../context/PredictionStore';
 
 export function PredictPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { addRecord } = usePredictionStore();
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -95,7 +97,7 @@ export function PredictPage() {
               >
                 <p className="text-xs uppercase tracking-wider text-indigo-300/80 mb-2">Next steps</p>
                 <button
-                  onClick={() => navigate(`/app/history/${lastRecordId}`)}
+                  onClick={() => router.push(`/history/${lastRecordId}`)}
                   className="w-full group flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all shadow-lg shadow-indigo-700/30"
                 >
                   <span className="flex items-center gap-2 text-sm font-medium">
@@ -104,7 +106,7 @@ export function PredictPage() {
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </button>
                 <button
-                  onClick={() => navigate(`/app/history/${lastRecordId}/review`)}
+                  onClick={() => router.push(`/history/${lastRecordId}/review`)}
                   className="w-full group flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
                 >
                   <span className="flex items-center gap-2 text-sm">
@@ -120,3 +122,5 @@ export function PredictPage() {
     </div>
   );
 }
+
+export default PredictPage;

@@ -1,3 +1,5 @@
+'use client';
+
 import { motion } from 'motion/react';
 import {
   Sparkles, ArrowRight, BarChart3, Upload, Brain, ShieldCheck,
@@ -31,18 +33,18 @@ export function LandingPage() {
         <div className="hidden md:flex items-center gap-7 text-sm text-slate-300">
           <a href="#features" className="hover:text-white">Features</a>
           <a href="#how" className="hover:text-white">How it works</a>
-          <Link href="/app/pricing" className="hover:text-white">Pricing</Link>
-          <Link href="/app/privacy" className="hover:text-white">Privacy</Link>
+          <Link href="/pricing" className="hover:text-white">Pricing</Link>
+          <Link href="/privacy" className="hover:text-white">Privacy</Link>
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href="/auth/login"
+            href="/login"
             className="hidden sm:inline-flex px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white transition-colors"
           >
             Sign in
           </Link>
           <Link
-            href="/auth/signup"
+            href="/signup"
             className="px-4 py-2 rounded-lg bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors"
           >
             Get started
@@ -79,14 +81,14 @@ export function LandingPage() {
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link
-            href="/app/predict"
+            href="/predict"
             className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 transition-all shadow-lg shadow-indigo-700/40"
           >
             Try the predictor
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link
-            href="/app/pricing"
+            href="/pricing"
             className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
           >
             See pricing
@@ -183,7 +185,7 @@ export function LandingPage() {
           Score your first customer in under thirty seconds. No credit card required.
         </p>
         <Link
-          href="/app/predict"
+          href="/predict"
           className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 transition-all shadow-lg shadow-indigo-700/40"
         >
           Open the workspace <ArrowRight className="w-4 h-4" />
@@ -198,9 +200,9 @@ export function LandingPage() {
             <span>© 2026 Churnly AI</span>
           </div>
           <div className="flex items-center gap-6">
-            <Link href="/app/pricing" className="hover:text-white">Pricing</Link>
-            <Link href="/app/privacy" className="hover:text-white">Privacy</Link>
-            <Link href="/app/terms" className="hover:text-white">Terms</Link>
+            <Link href="/pricing" className="hover:text-white">Pricing</Link>
+            <Link href="/privacy" className="hover:text-white">Privacy</Link>
+            <Link href="/terms" className="hover:text-white">Terms</Link>
           </div>
         </div>
       </footer>
@@ -236,3 +238,5 @@ const steps = [
   { title: 'Get a scored verdict', desc: 'Probability, risk tier, and an AI-written assessment — in under two seconds.' },
   { title: 'Act with confidence', desc: 'Drill into SHAP drivers and log outcomes to improve the model over time.' },
 ];
+
+export default LandingPage;

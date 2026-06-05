@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Check, Sparkles, Zap, Building2, ArrowRight, HelpCircle } from 'lucide-react';
@@ -86,7 +88,7 @@ export function PricingPage() {
                 ))}
               </ul>
               <Link
-                href="/app/predict"
+                href="/predict"
                 className={`group flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                   plan.featured
                     ? 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 shadow-lg shadow-indigo-700/30'

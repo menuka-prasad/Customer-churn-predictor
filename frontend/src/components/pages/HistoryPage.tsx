@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
@@ -8,7 +10,7 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
   LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
 } from 'recharts';
-import { usePredictionStore, PredictionRecord } from '../context/PredictionStore';
+import { usePredictionStore, PredictionRecord } from '../../context/PredictionStore';
 import Link from 'next/link';
 
 export function HistoryPage() {
@@ -209,10 +211,10 @@ function Row({ record }: { record: PredictionRecord }) {
       </td>
       <td className="px-5 py-3 text-slate-400 text-xs whitespace-nowrap">{new Date(record.createdAt).toLocaleString()}</td>
       <td className="px-5 py-3 text-right whitespace-nowrap">
-        <Link href={`/app/history/${record.id}`} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 mr-2">
+        <Link href={`/history/${record.id}`} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 mr-2">
           <Eye className="w-3.5 h-3.5" /> Analysis
         </Link>
-        <Link href={`/app/history/${record.id}/review`} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-400/30 text-indigo-100">
+        <Link href={`/history/${record.id}/review`} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-400/30 text-indigo-100">
           <ClipboardCheck className="w-3.5 h-3.5" /> Review
         </Link>
       </td>
@@ -336,3 +338,5 @@ function computeMetrics(records: PredictionRecord[]) {
     confusion: { tp, fp, fn, tn },
   };
 }
+
+export default HistoryPage;

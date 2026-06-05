@@ -1,16 +1,18 @@
+'use client';
+
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ArrowLeft, CheckCircle2, XCircle, ClipboardCheck, AlertTriangle,
   Sparkles, ThumbsUp, ThumbsDown,
 } from 'lucide-react';
-import { usePredictionStore } from '../context/PredictionStore';
+import { usePredictionStore } from '../../context/PredictionStore';
 import Link from 'next/link';
 
 export function ReviewPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const { id } = useParams() as { id?: string };
+  const router = useRouter();
   const { getById, updateActual } = usePredictionStore();
   const record = id ? getById(id) : undefined;
   const [submitted, setSubmitted] = useState(false);
@@ -21,7 +23,7 @@ export function ReviewPage() {
       <div className="text-center py-20">
         <AlertTriangle className="w-10 h-10 text-amber-300 mx-auto mb-4" />
         <p className="text-slate-300">Prediction not found.</p>
-        <Link href="/app/history" className="inline-block mt-4 text-indigo-300 hover:text-white">← Back to history</Link>
+        <Link href="/history" className="inline-block mt-4 text-indigo-300 hover:text-white">← Back to history</Link>
       </div>
     );
   }
@@ -38,7 +40,7 @@ export function ReviewPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => router.back()}
         className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-6"
       >
         <ArrowLeft className="w-4 h-4" /> Back
@@ -146,10 +148,10 @@ export function ReviewPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Link href="/app/history" className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-sm whitespace-nowrap">
+              <Link href="/history" className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-sm whitespace-nowrap">
                 View metrics
               </Link>
-              <Link href={`/app/history/${record.id}`} className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm whitespace-nowrap">
+              <Link href={`/history/${record.id}`} className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm whitespace-nowrap">
                 Open analysis
               </Link>
             </div>

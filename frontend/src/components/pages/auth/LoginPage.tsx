@@ -1,16 +1,18 @@
+'use client';
+
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
-import { AuthShell } from '../../components/AuthShell';
-import { SocialAuthButtons } from '../../components/SocialAuthButtons';
-import { useAuth } from '../../context/AuthContext';
+import { AuthShell } from '../../AuthShell';
+import { SocialAuthButtons } from '../../SocialAuthButtons';
+import { useAuth } from '../../../context/AuthContext';
 import Link from 'next/link';
 
 export function LoginPage() {
   const { signInWithPassword, configured } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const redirectTo = (location.state as any)?.from?.pathname || '/app';
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('from') || '/';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +28,7 @@ export function LoginPage() {
     const { error } = await signInWithPassword(email, password);
     setLoading(false);
     if (error) setError(error);
-    else navigate(redirectTo, { replace: true });
+    else router.replace(redirectTo);
   };
 
   return (
@@ -34,7 +36,7 @@ export function LoginPage() {
       variant="login"
       title="Welcome back"
       subtitle="Sign in to continue to your retention workspace."
-      footer={<>Don't have an account? <Link href="/auth/signup" className="text-indigo-300 hover:text-white font-medium">Create one</Link></>}
+      footer={<>Don't have an account? <Link href="/signup" className="text-indigo-300 hover:text-white font-medium">Create one</Link></>}
     >
       {!configured && <ConfigWarning />}
 
@@ -78,7 +80,7 @@ export function LoginPage() {
             />
             Remember me
           </label>
-          <Link href="/auth/forgot-password" className="text-indigo-300 hover:text-white">Forgot password?</Link>
+          <Link href="/forgot-password" className="text-indigo-300 hover:text-white">Forgot password?</Link>
         </div>
 
         {error && <ErrorBox message={error} />}

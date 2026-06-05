@@ -1,4 +1,7 @@
-import { NavLink, useNavigate } from 'react-router';
+'use client';
+
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles, LayoutGrid, Upload, History, Tag, Shield, FileText,
@@ -12,16 +15,17 @@ interface Props {
 }
 
 const navItems = [
-  { to: '/app/predict', label: 'Single Predict', icon: LayoutGrid, group: 'predict' },
-  { to: '/app/batch', label: 'Batch Predict', icon: Upload, group: 'predict' },
-  { to: '/app/history', label: 'History & Analytics', icon: History, group: 'predict' },
-  { to: '/app/pricing', label: 'Pricing', icon: Tag, group: 'company' },
-  { to: '/app/privacy', label: 'Privacy Policy', icon: Shield, group: 'company' },
-  { to: '/app/terms', label: 'Terms & Conditions', icon: FileText, group: 'company' },
+  { to: '/predict', label: 'Single Predict', icon: LayoutGrid, group: 'predict' },
+  { to: '/batch', label: 'Batch Predict', icon: Upload, group: 'predict' },
+  { to: '/history', label: 'History & Analytics', icon: History, group: 'predict' },
+  { to: '/pricing', label: 'Pricing', icon: Tag, group: 'company' },
+  { to: '/privacy', label: 'Privacy Policy', icon: Shield, group: 'company' },
+  { to: '/terms', label: 'Terms & Conditions', icon: FileText, group: 'company' },
 ];
 
 export function Sidebar({ expanded, onToggle }: Props) {
-  const navigate = useNavigate();
+  const router = useRouter();
+  const pathname = usePathname();
   const { user, signOut } = useAuth();
   const width = expanded ? 260 : 76;
 
@@ -38,7 +42,7 @@ export function Sidebar({ expanded, onToggle }: Props) {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth/login', { replace: true });
+    router.replace('/auth/login');
   };
 
   return (
@@ -50,7 +54,7 @@ export function Sidebar({ expanded, onToggle }: Props) {
       <div className="flex flex-col h-full p-3">
         {/* Logo */}
         <button
-          onClick={() => navigate('/')}
+          onClick={() => router.push('/')}
           className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors mb-4"
         >
           <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shrink-0 shadow-lg shadow-indigo-500/30">
@@ -83,21 +87,23 @@ export function Sidebar({ expanded, onToggle }: Props) {
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto overflow-x-hidden space-y-6 mt-2">
           <NavGroup label="Workspace" expanded={expanded}>
-            {navItems.filter(n => n.group === 'predict').map(n => (
-              <NavItem key={n.to} {...n} expanded={expanded} />
-            ))}
+            {navItems.filter(n => n.group === 'predict').map(n => {
+              const isActive = n.to === '/predict' ? pathname === n.to : pathname.startsWith(n.to);
+              return <NavItem key={n.to} {...n} expanded={expanded} isActive={isActive} />;
+            })}
           </NavGroup>
           <NavGroup label="Company" expanded={expanded}>
-            {navItems.filter(n => n.group === 'company').map(n => (
-              <NavItem key={n.to} {...n} expanded={expanded} />
-            ))}
+            {navItems.filter(n => n.group === 'company').map(n => {
+              const isActive = pathname.startsWith(n.to);
+              return <NavItem key={n.to} {...n} expanded={expanded} isActive={isActive} />;
+            })}
           </NavGroup>
         </nav>
 
         {/* Footer */}
         <div className="border-t border-white/10 pt-3 space-y-1">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => router.push('/')}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
           >
             <Home className="w-4 h-4 shrink-0" />
@@ -155,45 +161,38 @@ function NavGroup({ label, expanded, children }: { label: string; expanded: bool
   );
 }
 
-function NavItem({ to, label, icon: Icon, expanded }: { to: string; label: string; icon: any; expanded: boolean }) {
+function NavItem({ to, label, icon: Icon, expanded, isActive }: { to: string; label: string; icon: any; expanded: boolean; isActive: boolean }) {
   return (
-    <NavLink
-      to={to}
-      end={to === '/app/predict'}
-      className={({ isActive }) =>
-        `relative group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-          isActive
-            ? 'bg-gradient-to-r from-indigo-600/30 to-purple-600/20 text-white shadow-inner'
-            : 'text-slate-400 hover:text-white hover:bg-white/5'
-        }`
-      }
+    <Link
+      href={to}
+      className={`relative group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+        isActive
+          ? 'bg-gradient-to-r from-indigo-600/30 to-purple-600/20 text-white shadow-inner'
+          : 'text-slate-400 hover:text-white hover:bg-white/5'
+      }`}
     >
-      {({ isActive }) => (
-        <>
-          {isActive && (
-            <motion.span
-              layoutId="active-pill"
-              className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-gradient-to-b from-indigo-400 to-purple-500"
-            />
-          )}
-          <Icon className="w-4 h-4 shrink-0" />
-          <AnimatePresence>
-            {expanded && (
-              <motion.span
-                initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }}
-                className="text-sm truncate"
-              >
-                {label}
-              </motion.span>
-            )}
-          </AnimatePresence>
-          {!expanded && (
-            <span className="pointer-events-none absolute left-full ml-3 px-2 py-1 rounded-md bg-slate-900 border border-white/10 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-              {label}
-            </span>
-          )}
-        </>
+      {isActive && (
+        <motion.span
+          layoutId="active-pill"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-gradient-to-b from-indigo-400 to-purple-500"
+        />
       )}
-    </NavLink>
+      <Icon className="w-4 h-4 shrink-0" />
+      <AnimatePresence>
+        {expanded && (
+          <motion.span
+            initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }}
+            className="text-sm truncate"
+          >
+            {label}
+          </motion.span>
+        )}
+      </AnimatePresence>
+      {!expanded && (
+        <span className="pointer-events-none absolute left-full ml-3 px-2 py-1 rounded-md bg-slate-900 border border-white/10 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+          {label}
+        </span>
+      )}
+    </Link>
   );
 }

@@ -1,12 +1,14 @@
+'use client';
+
 import { useState, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Loader2,
   Download, Sparkles, Trash2, Eye, X,
 } from 'lucide-react';
-import { usePredictionStore, buildShapFor } from '../context/PredictionStore';
-import type { CustomerData, PredictionResult } from '../components/ChurnDashboard';
+import { usePredictionStore, buildShapFor } from '../../context/PredictionStore';
+import type { CustomerData, PredictionResult } from '../ChurnDashboard';
 
 interface ParsedRow {
   name: string;
@@ -15,7 +17,7 @@ interface ParsedRow {
 }
 
 export function BatchPredictPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { addBatch } = usePredictionStore();
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -259,7 +261,7 @@ export function BatchPredictPage() {
                         <td className="px-5 py-3 text-slate-300">{r.result.prediction}</td>
                         <td className="px-5 py-3 text-right">
                           <button
-                            onClick={() => navigate('/app/history')}
+                            onClick={() => router.push('/history')}
                             className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10"
                           >
                             <Eye className="w-3.5 h-3.5" /> View in history
@@ -330,3 +332,5 @@ function mockCustomer(): CustomerData {
     totalCharges: Math.random() * 5000,
   };
 }
+
+export default BatchPredictPage;

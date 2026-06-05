@@ -1,7 +1,9 @@
+'use client';
+
 import { useState } from 'react';
 import { Loader2, Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { AuthShell } from '../../components/AuthShell';
-import { useAuth } from '../../context/AuthContext';
+import { AuthShell } from '../../AuthShell';
+import { useAuth } from '../../../context/AuthContext';
 import { Field, ErrorBox, ConfigWarning } from './LoginPage';
 import Link from 'next/link';
 
@@ -28,7 +30,7 @@ export function ForgotPasswordPage() {
       title={sent ? 'Check your inbox' : 'Forgot password?'}
       subtitle={sent ? 'We sent you a reset link.' : "No worries — we'll email you a reset link."}
       footer={
-        <Link href="/auth/login" className="inline-flex items-center gap-1.5 text-indigo-300 hover:text-white">
+        <Link href="/login" className="inline-flex items-center gap-1.5 text-indigo-300 hover:text-white">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to sign in
         </Link>
       }

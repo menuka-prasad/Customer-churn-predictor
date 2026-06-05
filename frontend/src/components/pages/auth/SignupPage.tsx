@@ -1,15 +1,17 @@
+'use client';
+
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Loader2, Mail, Lock, User, CheckCircle2 } from 'lucide-react';
-import { AuthShell } from '../../components/AuthShell';
-import { SocialAuthButtons } from '../../components/SocialAuthButtons';
-import { useAuth } from '../../context/AuthContext';
+import { AuthShell } from '../../AuthShell';
+import { SocialAuthButtons } from '../../SocialAuthButtons';
+import { useAuth } from '../../../context/AuthContext';
 import { Field, Divider, ErrorBox, ConfigWarning } from './LoginPage';
 import Link from 'next/link';
 
 export function SignupPage() {
   const { signUpWithPassword, configured } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -43,7 +45,7 @@ export function SignupPage() {
     if (needsEmailConfirm) setSuccess('confirm');
     else {
       setSuccess('in');
-      setTimeout(() => navigate('/app', { replace: true }), 800);
+      setTimeout(() => router.replace('/'), 800);
     }
   };
 
@@ -61,7 +63,7 @@ export function SignupPage() {
           <p className="text-xs text-slate-400 mt-3">Didn't receive it? Check spam, or try again in a minute.</p>
         </div>
         <div className="mt-6 text-center">
-          <Link href="/auth/login" className="text-indigo-300 hover:text-white text-sm">← Back to sign in</Link>
+          <Link href="/login" className="text-indigo-300 hover:text-white text-sm">← Back to sign in</Link>
         </div>
       </AuthShell>
     );
@@ -72,7 +74,7 @@ export function SignupPage() {
       variant="signup"
       title="Create your workspace"
       subtitle="Start scoring customers in under a minute."
-      footer={<>Already have an account? <Link href="/auth/login" className="text-indigo-300 hover:text-white font-medium">Sign in</Link></>}
+      footer={<>Already have an account? <Link href="/login" className="text-indigo-300 hover:text-white font-medium">Sign in</Link></>}
     >
       {!configured && <ConfigWarning />}
 
@@ -143,8 +145,8 @@ export function SignupPage() {
           />
           <span>
             I agree to the{' '}
-            <Link href="/app/terms" className="text-indigo-300 hover:text-white">Terms</Link> and{' '}
-            <Link href="/app/privacy" className="text-indigo-300 hover:text-white">Privacy Policy</Link>.
+            <Link href="/terms" className="text-indigo-300 hover:text-white">Terms</Link> and{' '}
+            <Link href="/privacy" className="text-indigo-300 hover:text-white">Privacy Policy</Link>.
           </span>
         </label>
 

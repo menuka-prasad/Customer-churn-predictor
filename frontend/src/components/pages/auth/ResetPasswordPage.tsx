@@ -1,15 +1,17 @@
+'use client';
+
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Loader2, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { AuthShell } from '../../components/AuthShell';
-import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { AuthShell } from '../../AuthShell';
+import { useAuth } from '../../../context/AuthContext';
+import { supabase } from '../../../lib/supabase';
 import { Field, ErrorBox, ConfigWarning } from './LoginPage';
 import Link from 'next/link';
 
 export function ResetPasswordPage() {
   const { updatePassword, configured } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [ready, setReady] = useState(false);
   const [hasRecoverySession, setHasRecoverySession] = useState(false);
@@ -56,7 +58,7 @@ export function ResetPasswordPage() {
     if (error) setError(error);
     else {
       setDone(true);
-      setTimeout(() => navigate('/auth/login', { replace: true }), 1800);
+      setTimeout(() => router.replace('/login'), 1800);
     }
   };
 
@@ -67,7 +69,7 @@ export function ResetPasswordPage() {
       subtitle={done ? 'Redirecting you to sign in...' : 'Choose a strong password you haven\'t used before.'}
       footer={
         !done && (
-          <Link href="/auth/login" className="text-indigo-300 hover:text-white">Back to sign in</Link>
+          <Link href="/login" className="text-indigo-300 hover:text-white">Back to sign in</Link>
         )
       }
     >
@@ -94,7 +96,7 @@ export function ResetPasswordPage() {
                 This reset link is no longer valid. Request a new one to continue.
               </p>
               <Link
-                href="/auth/forgot-password"
+                href="/forgot-password"
                 className="inline-block mt-3 text-sm text-indigo-300 hover:text-white"
               >
                 Request new link →

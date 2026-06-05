@@ -1,17 +1,19 @@
-import { Outlet, useLocation } from 'react-router';
+'use client';
+
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { Menu, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 
-export function AppLayout() {
+export function AppLayout({ children }: { children: React.ReactNode }) {
   const [expanded, setExpanded] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const location = useLocation();
+  const pathname = usePathname();
 
   useEffect(() => {
     setMobileOpen(false);
-  }, [location.pathname]);
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
@@ -66,7 +68,7 @@ export function AppLayout() {
           </div>
 
           <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-10 max-w-[1400px] mx-auto">
-            <Outlet />
+            {children}
           </div>
         </main>
       </div>

@@ -1,3 +1,5 @@
+'use client';
+
 import { motion } from 'motion/react';
 import { Shield, Lock, Database, Eye, UserCheck, Globe2, Mail } from 'lucide-react';
 

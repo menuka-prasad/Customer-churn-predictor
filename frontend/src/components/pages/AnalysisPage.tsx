@@ -1,4 +1,6 @@
-import { useNavigate, useParams } from 'react-router';
+'use client';
+
+import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import {
   ArrowLeft, TrendingUp, TrendingDown, Sparkles, AlertTriangle,
@@ -8,13 +10,13 @@ import {
   ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
   BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, Cell,
 } from 'recharts';
-import { usePredictionStore } from '../context/PredictionStore';
-import { GaugeChart } from '../components/GaugeChart';
+import { usePredictionStore } from '../../context/PredictionStore';
+import { GaugeChart } from '../GaugeChart';
 import Link from 'next/link';
 
 export function AnalysisPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const { id } = useParams() as { id?: string };
+  const router = useRouter();
   const { getById } = usePredictionStore();
   const record = id ? getById(id) : undefined;
 
@@ -23,7 +25,7 @@ export function AnalysisPage() {
       <div className="text-center py-20">
         <AlertTriangle className="w-10 h-10 text-amber-300 mx-auto mb-4" />
         <p className="text-slate-300">Prediction not found.</p>
-        <Link href="/app/history" className="inline-block mt-4 text-indigo-300 hover:text-white">← Back to history</Link>
+        <Link href="/history" className="inline-block mt-4 text-indigo-300 hover:text-white">← Back to history</Link>
       </div>
     );
   }
@@ -40,14 +42,14 @@ export function AnalysisPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => router.back()}
           className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white"
         >
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
         <div className="flex gap-2">
           <Link
-            href={`/app/history/${record.id}/review`}
+            href={`/history/${record.id}/review`}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/30 text-emerald-200 text-sm"
           >
             <ClipboardCheck className="w-4 h-4" /> Manual review
@@ -275,3 +277,5 @@ function buildRecommendations(record: any) {
   }
   return recs.slice(0, 5);
 }
+
+export default AnalysisPage;

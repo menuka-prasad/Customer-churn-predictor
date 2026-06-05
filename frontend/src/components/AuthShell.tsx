@@ -127,9 +127,9 @@ export function AuthShell({ title, subtitle, children, footer, variant = 'login'
         </div>
 
         <div className="px-6 pb-6 text-center text-xs text-slate-500">
-          <Link href="/app/privacy" className="hover:text-slate-300">Privacy</Link>
+          <Link href="/privacy" className="hover:text-slate-300">Privacy</Link>
           <span className="mx-2">·</span>
-          <Link href="/app/terms" className="hover:text-slate-300">Terms</Link>
+          <Link href="/terms" className="hover:text-slate-300">Terms</Link>
         </div>
       </div>
     </div>

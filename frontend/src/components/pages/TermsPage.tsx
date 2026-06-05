@@ -1,3 +1,5 @@
+'use client';
+
 import { motion } from 'motion/react';
 import { FileText, Scale, AlertTriangle, Mail } from 'lucide-react';
 
