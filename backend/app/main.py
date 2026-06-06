@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from backend.app.services.prediction_service import PredictionService
+from app.services.prediction_service import PredictionService
 import pandas as pd
-from backend.app.schemas.customer_data import CustomerData
+from app.schemas.customer_data import CustomerData
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()

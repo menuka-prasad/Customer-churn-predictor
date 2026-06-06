@@ -1,5 +1,32 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import type { CustomerData, PredictionResult } from '../components/ChurnDashboard';
+import { useState, useCallback } from 'react';
+import type { CustomerData, PredictionResult } from '../types/churn';
+import { PredictionResponse, CustomerData as ApiCustomerData } from '@/types/customer';
+import { predictCustomerChurn } from '@/lib/api';
+import { create } from 'zustand';
+
+function mapToApiCustomerData(data: CustomerData): ApiCustomerData {
+  return {
+    tenure: data.tenure,
+    MonthlyCharges: data.monthlyCharges,
+    TotalCharges: data.totalCharges,
+    gender: data.gender,
+    SeniorCitizen: data.seniorCitizen,
+    Partner: data.partner,
+    Dependents: data.dependents,
+    PhoneService: data.phoneService,
+    MultipleLines: data.multipleLines,
+    InternetService: data.internetService,
+    OnlineSecurity: data.onlineSecurity,
+    OnlineBackup: data.onlineBackup,
+    DeviceProtection: data.deviceProtection,
+    TechSupport: data.techSupport,
+    StreamingTV: data.streamingTV,
+    StreamingMovies: data.streamingMovies,
+    Contract: data.contract,
+    PaperlessBilling: data.paperlessBilling,
+    PaymentMethod: data.paymentMethod,
+  };
+}
 
 export interface ShapFactor {
   feature: string;
@@ -20,15 +47,7 @@ export interface PredictionRecord {
   source: 'manual' | 'batch';
 }
 
-interface StoreCtx {
-  records: PredictionRecord[];
-  addRecord: (rec: Omit<PredictionRecord, 'id' | 'createdAt'>) => PredictionRecord;
-  addBatch: (recs: Array<Omit<PredictionRecord, 'id' | 'createdAt'>>) => void;
-  updateActual: (id: string, actual: 'CHURNED' | 'STAYED') => void;
-  getById: (id: string) => PredictionRecord | undefined;
-}
 
-const Ctx = createContext<StoreCtx | null>(null);
 
 function seedRecords(): PredictionRecord[] {
   const seed: Array<Partial<PredictionRecord> & { customerName: string; prob: number; actual?: 'CHURNED' | 'STAYED' | null }> = [
@@ -84,48 +103,7 @@ function defaultShap(prob: number): ShapFactor[] {
   ];
 }
 
-export function PredictionStoreProvider({ children }: { children: ReactNode }) {
-  const [records, setRecords] = useState<PredictionRecord[]>(seedRecords);
 
-  const addRecord = useCallback((rec: Omit<PredictionRecord, 'id' | 'createdAt'>) => {
-    const full: PredictionRecord = {
-      ...rec,
-      id: `rec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      createdAt: new Date().toISOString(),
-    };
-    setRecords((r) => [full, ...r]);
-    return full;
-  }, []);
-
-  const addBatch = useCallback((recs: Array<Omit<PredictionRecord, 'id' | 'createdAt'>>) => {
-    setRecords((r) => [
-      ...recs.map((rec, i) => ({
-        ...rec,
-        id: `batch-${Date.now()}-${i}`,
-        createdAt: new Date().toISOString(),
-      })),
-      ...r,
-    ]);
-  }, []);
-
-  const updateActual = useCallback((id: string, actual: 'CHURNED' | 'STAYED') => {
-    setRecords((r) => r.map((rec) => rec.id === id ? { ...rec, actual, reviewedAt: new Date().toISOString() } : rec));
-  }, []);
-
-  const getById = useCallback((id: string) => records.find((r) => r.id === id), [records]);
-
-  return (
-    <Ctx.Provider value={{ records, addRecord, addBatch, updateActual, getById }}>
-      {children}
-    </Ctx.Provider>
-  );
-}
-
-export function usePredictionStore() {
-  const ctx = useContext(Ctx);
-  if (!ctx) throw new Error('usePredictionStore must be used inside PredictionStoreProvider');
-  return ctx;
-}
 
 export function buildShapFor(data: CustomerData, probability: number): ShapFactor[] {
   const sign = probability > 50 ? 1 : -1;
@@ -178,3 +156,82 @@ export function buildShapFor(data: CustomerData, probability: number): ShapFacto
     impact: probability > 50 ? f.impact : -f.impact * 0.6,
   })).map(f => ({ ...f, impact: Math.max(-40, Math.min(40, Math.round(f.impact))) }));
 }
+
+////////////////////////////////
+/////////////
+//// from here real api calls are shown. so when i complete real ones above script parts need to be come down below this
+////////////
+////////////////////////////////
+
+interface PredictionState {
+  result: PredictionResponse | null;
+  isLoading: boolean;
+  error: string | null;
+  records: PredictionRecord[];
+  submitPrediction: (data: CustomerData) => Promise<PredictionResponse | undefined>;
+  reset: () => void;
+  addRecord: (rec: Omit<PredictionRecord, 'id' | 'createdAt'>) => PredictionRecord;
+  addBatch: (recs: Array<Omit<PredictionRecord, 'id' | 'createdAt'>>) => void;
+  updateActual: (id: string, actual: 'CHURNED' | 'STAYED') => void;
+  getById: (id: string) => PredictionRecord | undefined;
+}
+
+export const usePredictionStore = create<PredictionState>((set, get) => ({
+  result: null,
+  isLoading: false,
+  error: null,
+  records: seedRecords(),
+  
+  submitPrediction: async (data: CustomerData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const apiData = mapToApiCustomerData(data);
+      const response = await predictCustomerChurn(apiData);
+      set({ result: response, isLoading: false });
+      return response;
+    } catch (error: any) {
+      set({ 
+        error: error.message || "Failed to get prediction from server", 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  reset: () => set({ result: null, error: null, isLoading: false }),
+
+  addRecord: (rec) => {
+    const full: PredictionRecord = {
+      ...rec,
+      id: `rec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      createdAt: new Date().toISOString(),
+    };
+    set((state) => ({ records: [full, ...state.records] }));
+    return full;
+  },
+
+  addBatch: (recs) => {
+    set((state) => ({
+      records: [
+        ...recs.map((rec, i) => ({
+          ...rec,
+          id: `batch-${Date.now()}-${i}`,
+          createdAt: new Date().toISOString(),
+        })),
+        ...state.records,
+      ],
+    }));
+  },
+
+  updateActual: (id, actual) => {
+    set((state) => ({
+      records: state.records.map((rec) => 
+        rec.id === id ? { ...rec, actual, reviewedAt: new Date().toISOString() } : rec
+      ),
+    }));
+  },
+
+  getById: (id) => {
+    return get().records.find((r) => r.id === id);
+  },
+}));

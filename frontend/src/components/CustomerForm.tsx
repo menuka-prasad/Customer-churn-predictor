@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from './ui/switch';
 import { Button } from './ui/button';
 import { ChevronDown, ChevronUp, Sparkles, RotateCcw } from 'lucide-react';
-import type { CustomerData } from './ChurnDashboard';
+import type { CustomerData } from '../types/churn';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 
 interface CustomerFormProps {

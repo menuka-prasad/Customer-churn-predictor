@@ -8,7 +8,8 @@ import {
   Download, Sparkles, Trash2, Eye, X,
 } from 'lucide-react';
 import { usePredictionStore, buildShapFor } from '../../context/PredictionStore';
-import type { CustomerData, PredictionResult } from '../ChurnDashboard';
+import type { CustomerData, PredictionResult } from '../../types/churn';
+import { mockCustomer } from '../../lib/mock';
 
 interface ParsedRow {
   name: string;
@@ -316,21 +317,6 @@ function RiskBadge({ level }: { level: 'LOW' | 'MEDIUM' | 'HIGH' }) {
 
 function barColor(level: 'LOW' | 'MEDIUM' | 'HIGH') {
   return level === 'LOW' ? 'bg-emerald-400' : level === 'MEDIUM' ? 'bg-amber-400' : 'bg-rose-400';
-}
-
-function mockCustomer(): CustomerData {
-  return {
-    gender: Math.random() > 0.5 ? 'Female' : 'Male',
-    seniorCitizen: Math.random() > 0.7, partner: 'Yes', dependents: 'No',
-    phoneService: 'Yes', multipleLines: 'No', internetService: 'Fiber optic',
-    onlineSecurity: 'No', onlineBackup: 'No', deviceProtection: 'No',
-    techSupport: 'No', streamingTV: 'Yes', streamingMovies: 'Yes',
-    contract: ['Month-to-month', 'One year', 'Two year'][Math.floor(Math.random() * 3)],
-    paperlessBilling: 'Yes', paymentMethod: 'Electronic check',
-    tenure: Math.floor(Math.random() * 72) + 1,
-    monthlyCharges: 30 + Math.random() * 90,
-    totalCharges: Math.random() * 5000,
-  };
 }
 
 export default BatchPredictPage;

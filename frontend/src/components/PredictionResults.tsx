@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Card } from './ui/card';
 import { Brain, TrendingUp, Target, AlertCircle } from 'lucide-react';
-import type { PredictionResult } from './ChurnDashboard';
+import type { PredictionResult } from '../types/churn';
 import { GaugeChart } from './GaugeChart';
 import { Skeleton } from './ui/skeleton';
 

@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ArrowRight, ClipboardCheck, BarChart3 } from 'lucide-react';
 import { CustomerForm } from '../CustomerForm';
 import { PredictionResults } from '../PredictionResults';
-import type { CustomerData, PredictionResult } from '../ChurnDashboard';
+import type { CustomerData, PredictionResult } from '../../types/churn';
 import { usePredictionStore, buildShapFor } from '../../context/PredictionStore';
+import { calculateChurnProbability } from '../../lib/churn';
 
 export function PredictPage() {
   const router = useRouter();
@@ -18,29 +19,44 @@ export function PredictPage() {
 
   const handlePredict = async (data: CustomerData) => {
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 2200));
 
     let probability = 50;
-    if (data.contract === 'Month-to-month') probability += 20;
-    else if (data.contract === 'One year') probability -= 10;
-    else if (data.contract === 'Two year') probability -= 20;
-    if (data.tenure < 12) probability += 15; else if (data.tenure > 48) probability -= 20;
-    const hasServices = [data.onlineSecurity, data.onlineBackup, data.deviceProtection, data.techSupport, data.streamingTV, data.streamingMovies].filter(s => s === 'Yes').length;
-    probability -= hasServices * 5;
-    if (data.paymentMethod === 'Electronic check') probability += 10;
-    if (data.monthlyCharges > 80) probability += 10;
-    probability = Math.max(5, Math.min(95, probability + Math.random() * 10 - 5));
+    let riskLevel: PredictionResult['riskLevel'] = 'MEDIUM';
+    let predictionText = 'Likely To Stay';
 
-    const riskLevel: PredictionResult['riskLevel'] = probability < 30 ? 'LOW' : probability < 70 ? 'MEDIUM' : 'HIGH';
+    try {
+      // 1. Try to get prediction from real backend
+      const { submitPrediction } = usePredictionStore.getState();
+      const apiResponse = await submitPrediction(data);
+      
+      if (apiResponse) {
+        probability = Math.round(apiResponse.churn_probability * 100);
+        // backend risk_level is 'Low', 'Medium', 'High' or 'Very Low', convert to 'LOW' | 'MEDIUM' | 'HIGH'
+        const upperRisk = apiResponse.risk_level.toUpperCase();
+        riskLevel = (upperRisk.includes('LOW') ? 'LOW' : upperRisk.includes('HIGH') ? 'HIGH' : 'MEDIUM') as PredictionResult['riskLevel'];
+        predictionText = apiResponse.churn_prediction === 1 ? 'Likely To Churn' : 'Likely To Stay';
+      }
+    } catch (error) {
+      console.warn("Backend API failed, falling back to dummy prediction", error);
+      // 2. Dev Fallback: Dummy prediction
+      await new Promise((r) => setTimeout(r, 1000)); // fake delay
+      probability = calculateChurnProbability(data);
+      riskLevel = probability < 30 ? 'LOW' : probability < 70 ? 'MEDIUM' : 'HIGH';
+      predictionText = probability > 50 ? 'Likely To Churn' : 'Likely To Stay';
+    }
+
+    // Generate dummy assessment and SHAP (backend doesn't provide these yet)
+    const assessment = riskLevel === 'HIGH'
+      ? `Customer demonstrates elevated churn risk. Immediate retention initiatives recommended to prevent customer loss.`
+      : riskLevel === 'MEDIUM'
+      ? `Customer shows moderate churn risk. Consider proactive engagement and service enhancements.`
+      : `Customer exhibits strong retention indicators with stable usage patterns and long-term commitment.`;
+
     const result: PredictionResult = {
-      probability: Math.round(probability),
+      probability,
       riskLevel,
-      prediction: probability > 50 ? 'Likely To Churn' : 'Likely To Stay',
-      assessment: riskLevel === 'HIGH'
-        ? `Customer demonstrates elevated churn risk. Immediate retention initiatives recommended to prevent customer loss.`
-        : riskLevel === 'MEDIUM'
-        ? `Customer shows moderate churn risk. Consider proactive engagement and service enhancements.`
-        : `Customer exhibits strong retention indicators with stable usage patterns and long-term commitment.`,
+      prediction: predictionText,
+      assessment,
     };
     setPrediction(result);
 

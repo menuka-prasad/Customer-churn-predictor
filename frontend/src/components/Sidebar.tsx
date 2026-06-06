@@ -18,7 +18,7 @@ const navItems = [
   { to: '/predict', label: 'Single Predict', icon: LayoutGrid, group: 'predict' },
   { to: '/batch', label: 'Batch Predict', icon: Upload, group: 'predict' },
   { to: '/history', label: 'History & Analytics', icon: History, group: 'predict' },
-  { to: '/pricing', label: 'Pricing', icon: Tag, group: 'company' },
+  // { to: '/pricing', label: 'Pricing', icon: Tag, group: 'company' },
   { to: '/privacy', label: 'Privacy Policy', icon: Shield, group: 'company' },
   { to: '/terms', label: 'Terms & Conditions', icon: FileText, group: 'company' },
 ];

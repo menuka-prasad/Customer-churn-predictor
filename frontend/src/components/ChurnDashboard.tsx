@@ -3,35 +3,8 @@ import { CustomerForm } from './CustomerForm';
 import { PredictionResults } from './PredictionResults';
 import { motion } from 'motion/react';
 import { Sparkles } from 'lucide-react';
-
-export interface CustomerData {
-  gender: string;
-  seniorCitizen: boolean;
-  partner: string;
-  dependents: string;
-  phoneService: string;
-  multipleLines: string;
-  internetService: string;
-  onlineSecurity: string;
-  onlineBackup: string;
-  deviceProtection: string;
-  techSupport: string;
-  streamingTV: string;
-  streamingMovies: string;
-  contract: string;
-  paperlessBilling: string;
-  paymentMethod: string;
-  tenure: number;
-  monthlyCharges: number;
-  totalCharges: number;
-}
-
-export interface PredictionResult {
-  probability: number;
-  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
-  prediction: string;
-  assessment: string;
-}
+import { CustomerData, PredictionResult } from '../types/churn';
+import { simulateChurnPrediction } from '../lib/churn';
 
 export function ChurnDashboard() {
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
@@ -40,55 +13,8 @@ export function ChurnDashboard() {
   const handlePredict = async (data: CustomerData) => {
     setIsLoading(true);
 
-    // Simulate AI prediction with realistic logic
-    await new Promise(resolve => setTimeout(resolve, 2500));
-
-    // Calculate probability based on risk factors
-    let probability = 50;
-
-    // Contract type impact
-    if (data.contract === 'Month-to-month') probability += 20;
-    else if (data.contract === 'One year') probability -= 10;
-    else if (data.contract === 'Two year') probability -= 20;
-
-    // Tenure impact
-    if (data.tenure < 12) probability += 15;
-    else if (data.tenure > 48) probability -= 20;
-
-    // Service subscriptions
-    const hasServices = [
-      data.onlineSecurity,
-      data.onlineBackup,
-      data.deviceProtection,
-      data.techSupport,
-      data.streamingTV,
-      data.streamingMovies
-    ].filter(s => s === 'Yes').length;
-
-    probability -= hasServices * 5;
-
-    // Payment method
-    if (data.paymentMethod === 'Electronic check') probability += 10;
-
-    // Monthly charges
-    if (data.monthlyCharges > 80) probability += 10;
-
-    // Clamp between 5 and 95
-    probability = Math.max(5, Math.min(95, probability + Math.random() * 10 - 5));
-
-    const riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' =
-      probability < 30 ? 'LOW' : probability < 70 ? 'MEDIUM' : 'HIGH';
-
-    const predictionText = probability > 50 ? 'Likely To Churn' : 'Likely To Stay';
-
-    const assessment = generateAssessment(data, riskLevel, probability);
-
-    setPrediction({
-      probability: Math.round(probability),
-      riskLevel,
-      prediction: predictionText,
-      assessment
-    });
+    const result = await simulateChurnPrediction(data);
+    setPrediction(result);
 
     setIsLoading(false);
   };
@@ -171,32 +97,4 @@ export function ChurnDashboard() {
       </div>
     </div>
   );
-}
-
-function generateAssessment(data: CustomerData, riskLevel: string, probability: number): string {
-  const factors = [];
-
-  if (data.tenure < 12) factors.push('short tenure');
-  if (data.contract === 'Month-to-month') factors.push('month-to-month contract');
-
-  const services = [
-    data.onlineSecurity,
-    data.onlineBackup,
-    data.deviceProtection,
-    data.techSupport,
-    data.streamingTV,
-    data.streamingMovies
-  ].filter(s => s === 'Yes').length;
-
-  if (services < 2) factors.push('lack of additional service subscriptions');
-  if (data.paymentMethod === 'Electronic check') factors.push('electronic check payment method');
-  if (data.monthlyCharges > 80) factors.push('high monthly charges');
-
-  if (riskLevel === 'HIGH') {
-    return `Customer demonstrates elevated churn risk due to ${factors.slice(0, 3).join(', ')}. Immediate retention initiatives recommended to prevent customer loss.`;
-  } else if (riskLevel === 'MEDIUM') {
-    return `Customer shows moderate churn risk. Consider proactive engagement strategies and service enhancements to strengthen retention.`;
-  } else {
-    return `Customer exhibits strong retention indicators with stable usage patterns and long-term commitment. Continue maintaining service quality and engagement.`;
-  }
 }

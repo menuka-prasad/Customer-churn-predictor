@@ -13,6 +13,7 @@ import {
 import { usePredictionStore } from '../../context/PredictionStore';
 import { GaugeChart } from '../GaugeChart';
 import Link from 'next/link';
+import { buildRecommendations } from '../../lib/churn';
 
 export function AnalysisPage() {
   const { id } = useParams() as { id?: string };
@@ -36,7 +37,7 @@ export function AnalysisPage() {
     feature: f.feature,
     impact: Math.abs(f.impact),
   }));
-  const recommendations = buildRecommendations(record);
+  const recommendations = buildRecommendations(record.customerData);
 
   return (
     <div>
@@ -252,30 +253,6 @@ function RiskPill({ level }: { level: 'LOW' | 'MEDIUM' | 'HIGH' }) {
 
 function labelize(k: string) {
   return k.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase());
-}
-
-function buildRecommendations(record: any) {
-  const recs: { title: string; desc: string }[] = [];
-  const d = record.customerData;
-  if (d.contract === 'Month-to-month') {
-    recs.push({ title: 'Offer annual contract upgrade', desc: 'Bundle a 15% discount with a one-year commitment to reduce flight risk.' });
-  }
-  if (d.tenure < 12) {
-    recs.push({ title: 'Trigger 90-day onboarding outreach', desc: 'Schedule a CSM check-in and personalized success plan within the next two weeks.' });
-  }
-  if (d.onlineSecurity === 'No' || d.techSupport === 'No') {
-    recs.push({ title: 'Trial bundled add-on services', desc: 'Offer 60-day free trial of Online Security and Tech Support — both strongly reduce churn.' });
-  }
-  if (d.paymentMethod === 'Electronic check') {
-    recs.push({ title: 'Migrate to auto-pay', desc: 'Promote auto-pay with a small one-time credit — payment friction drives passive churn.' });
-  }
-  if (d.monthlyCharges > 80) {
-    recs.push({ title: 'Price sensitivity review', desc: 'Run a billing review and propose a tier downgrade or loyalty discount before competitor outreach.' });
-  }
-  if (recs.length < 3) {
-    recs.push({ title: 'Maintain quarterly business review', desc: 'Continue scheduled QBRs to reinforce value and surface expansion opportunities.' });
-  }
-  return recs.slice(0, 5);
 }
 
 export default AnalysisPage;
