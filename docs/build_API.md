@@ -22,4 +22,10 @@ Here `SeniorCitizen` col stores values of 1 and 0. so best way for us is get boo
 3. We convert to DataFrame — value is True
 4. our preprocessor sees True
 
-So that is wrong. what we need is 1 and 0 for that column.
+So that is wrong. what we need is 1 and 0 for that column. so we have to convert that bool value to 1 and 0 
+
+
+```python
+input_data["SeniorCitizen"] = input_data["SeniorCitizen"].astype(int)
+```
+

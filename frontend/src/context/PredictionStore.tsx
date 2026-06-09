@@ -3,6 +3,7 @@ import type { CustomerData, PredictionResult } from '../types/churn';
 import { PredictionResponse, CustomerData as ApiCustomerData } from '@/types/customer';
 import { predictCustomerChurn } from '@/lib/api';
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 function mapToApiCustomerData(data: CustomerData): ApiCustomerData {
   return {
@@ -176,62 +177,70 @@ interface PredictionState {
   getById: (id: string) => PredictionRecord | undefined;
 }
 
-export const usePredictionStore = create<PredictionState>((set, get) => ({
-  result: null,
-  isLoading: false,
-  error: null,
-  records: seedRecords(),
-  
-  submitPrediction: async (data: CustomerData) => {
-    set({ isLoading: true, error: null });
-    try {
-      const apiData = mapToApiCustomerData(data);
-      const response = await predictCustomerChurn(apiData);
-      set({ result: response, isLoading: false });
-      return response;
-    } catch (error: any) {
-      set({ 
-        error: error.message || "Failed to get prediction from server", 
-        isLoading: false 
-      });
-      throw error;
-    }
-  },
+export const usePredictionStore = create<PredictionState>()(
+  persist(
+    (set, get) => ({
+      result: null,
+      isLoading: false,
+      error: null,
+      records: seedRecords(),
+      
+      submitPrediction: async (data: CustomerData) => {
+        set({ isLoading: true, error: null });
+        try {
+          const apiData = mapToApiCustomerData(data);
+          const response = await predictCustomerChurn(apiData);
+          set({ result: response, isLoading: false });
+          return response;
+        } catch (error: any) {
+          set({ 
+            error: error.message || "Failed to get prediction from server", 
+            isLoading: false 
+          });
+          throw error;
+        }
+      },
 
-  reset: () => set({ result: null, error: null, isLoading: false }),
+      reset: () => set({ result: null, error: null, isLoading: false }),
 
-  addRecord: (rec) => {
-    const full: PredictionRecord = {
-      ...rec,
-      id: `rec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      createdAt: new Date().toISOString(),
-    };
-    set((state) => ({ records: [full, ...state.records] }));
-    return full;
-  },
-
-  addBatch: (recs) => {
-    set((state) => ({
-      records: [
-        ...recs.map((rec, i) => ({
+      addRecord: (rec) => {
+        const full: PredictionRecord = {
           ...rec,
-          id: `batch-${Date.now()}-${i}`,
+          id: `rec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           createdAt: new Date().toISOString(),
-        })),
-        ...state.records,
-      ],
-    }));
-  },
+        };
+        set((state) => ({ records: [full, ...state.records] }));
+        return full;
+      },
 
-  updateActual: (id, actual) => {
-    set((state) => ({
-      records: state.records.map((rec) => 
-        rec.id === id ? { ...rec, actual, reviewedAt: new Date().toISOString() } : rec
-      ),
-    }));
-  },
+      addBatch: (recs) => {
+        set((state) => ({
+          records: [
+            ...recs.map((rec, i) => ({
+              ...rec,
+              id: `batch-${Date.now()}-${i}`,
+              createdAt: new Date().toISOString(),
+            })),
+            ...state.records,
+          ],
+        }));
+      },
 
-  getById: (id) => {
-    return get().records.find((r) => r.id === id);
-  },
-}));
+      updateActual: (id, actual) => {
+        set((state) => ({
+          records: state.records.map((rec) => 
+            rec.id === id ? { ...rec, actual, reviewedAt: new Date().toISOString() } : rec
+          ),
+        }));
+      },
+
+      getById: (id) => {
+        return get().records.find((r) => r.id === id);
+      },
+    }),
+    {
+      name: 'prediction-storage',
+      partialize: (state) => ({ records: state.records }),
+    }
+  )
+);

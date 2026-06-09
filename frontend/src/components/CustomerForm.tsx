@@ -273,7 +273,10 @@ export function CustomerForm({ onPredict, onReset }: CustomerFormProps) {
                 <input
                   type="number"
                   value={formData.tenure}
-                  onChange={(e) => setFormData({...formData, tenure: parseInt(e.target.value) || 0})}
+                  onChange={(e) => {
+                    const newTenure = parseInt(e.target.value) || 0;
+                    setFormData({...formData, tenure: newTenure, totalCharges: parseFloat((newTenure * formData.monthlyCharges).toFixed(2))});
+                  }}
                   className="w-full h-10 px-3 bg-slate-800/50 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   min="0"
                 />
@@ -283,7 +286,10 @@ export function CustomerForm({ onPredict, onReset }: CustomerFormProps) {
                 <input
                   type="number"
                   value={formData.monthlyCharges}
-                  onChange={(e) => setFormData({...formData, monthlyCharges: parseFloat(e.target.value) || 0})}
+                  onChange={(e) => {
+                    const newMonthly = parseFloat(e.target.value) || 0;
+                    setFormData({...formData, monthlyCharges: newMonthly, totalCharges: parseFloat((formData.tenure * newMonthly).toFixed(2))});
+                  }}
                   className="w-full h-10 px-3 bg-slate-800/50 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   min="0"
                   step="0.01"

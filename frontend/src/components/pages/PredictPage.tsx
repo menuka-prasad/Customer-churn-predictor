@@ -9,10 +9,12 @@ import { PredictionResults } from '../PredictionResults';
 import type { CustomerData, PredictionResult } from '../../types/churn';
 import { usePredictionStore, buildShapFor } from '../../context/PredictionStore';
 import { calculateChurnProbability } from '../../lib/churn';
+import { getExplanation } from '../../lib/api';
+import { CustomerData as ApiCustomerData } from '@/types/customer';
 
 export function PredictPage() {
   const router = useRouter();
-  const { addRecord } = usePredictionStore();
+  const { addRecord, submitPrediction } = usePredictionStore();
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastRecordId, setLastRecordId] = useState<string | null>(null);
@@ -23,10 +25,10 @@ export function PredictPage() {
     let probability = 50;
     let riskLevel: PredictionResult['riskLevel'] = 'MEDIUM';
     let predictionText = 'Likely To Stay';
+    let shapData = null;
 
     try {
       // 1. Try to get prediction from real backend
-      const { submitPrediction } = usePredictionStore.getState();
       const apiResponse = await submitPrediction(data);
       
       if (apiResponse) {
@@ -35,6 +37,22 @@ export function PredictPage() {
         const upperRisk = apiResponse.risk_level.toUpperCase();
         riskLevel = (upperRisk.includes('LOW') ? 'LOW' : upperRisk.includes('HIGH') ? 'HIGH' : 'MEDIUM') as PredictionResult['riskLevel'];
         predictionText = apiResponse.churn_prediction === 1 ? 'Likely To Churn' : 'Likely To Stay';
+        
+        // Fetch SHAP explanations from the separate endpoint
+        try {
+          const apiData = {
+            tenure: data.tenure, MonthlyCharges: data.monthlyCharges, TotalCharges: data.totalCharges,
+            gender: data.gender, SeniorCitizen: data.seniorCitizen, Partner: data.partner, Dependents: data.dependents,
+            PhoneService: data.phoneService, MultipleLines: data.multipleLines, InternetService: data.internetService,
+            OnlineSecurity: data.onlineSecurity, OnlineBackup: data.onlineBackup, DeviceProtection: data.deviceProtection,
+            TechSupport: data.techSupport, StreamingTV: data.streamingTV, StreamingMovies: data.streamingMovies,
+            Contract: data.contract, PaperlessBilling: data.paperlessBilling, PaymentMethod: data.paymentMethod,
+          } as ApiCustomerData;
+          const explResponse = await getExplanation(apiData as any);
+          if (explResponse.shap_values) shapData = explResponse.shap_values;
+        } catch (e) {
+          console.warn("Could not fetch SHAP values, using fallback", e);
+        }
       }
     } catch (error) {
       console.warn("Backend API failed, falling back to dummy prediction", error);
@@ -64,7 +82,7 @@ export function PredictPage() {
       customerName: `Customer ${new Date().toLocaleTimeString()}`,
       customerData: data,
       result,
-      shap: buildShapFor(data, result.probability),
+      shap: shapData || buildShapFor(data, result.probability),
       actual: null,
       source: 'manual',
     });

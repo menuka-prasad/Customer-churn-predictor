@@ -1,18 +1,14 @@
 import joblib
-import sys
-from pathlib import Path
-import json
 import pandas as pd
+import numpy as np
+from pathlib import Path
 from collections import defaultdict
+import shap
+from app.services.feature_engineering import engineer_features
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.append(str(PROJECT_ROOT))
-    
-from app.services.feature_engineering import (
-    engineer_features
-)
-    
+
 model_path = (
     PROJECT_ROOT /
     "backend" /
@@ -22,59 +18,18 @@ model_path = (
     "churn_pipeline.pkl"
 )
 
-threshold_path = (
-    PROJECT_ROOT /
-    "backend" /
-    "app" /
-    "models" /
-    "artifacts" /
-    "threshold.json"
-)
-
-with open(threshold_path, "r") as f:
-    threshold_data = json.load(f)
-    
-
-class PredictionService:
+class ExplanationService:
     def __init__(self):
-        # load model and threshold here ONCE
         self.model = joblib.load(model_path)
-        self.custom_threshold = threshold_data["threshold"]
+        self.preprocessor = self.model.named_steps['preprocessor']
+        self.classifier = self.model.named_steps['model']
         
-    
-    def predict(self, input_data):
-        # use already-loaded model to predict
-        input_data["SeniorCitizen"] = input_data["SeniorCitizen"].astype(int)
-        input_data = engineer_features(input_data)
+        # Initialize explainer for the classifier
+        # We use a TreeExplainer assuming it's a Random Forest, XGBoost, etc.
+        # If it's a linear model, we'd use LinearExplainer. 
+        # SHAP's generic Explainer usually picks the right one.
+        self.explainer = shap.Explainer(self.classifier)
         
-        y_prob = self.model.predict_proba(input_data)[:, 1]
-        y_pred = (y_prob >= self.custom_threshold).astype(int)
-        
-        results = []
-        
-        for prob, pred in zip(y_prob, y_pred):
-            if (prob < 0.30):
-                risk_level = "Very Low"
-            elif (prob < 0.50):
-                risk_level = "Low"
-            elif (prob < 0.70):
-                risk_level = "Medium"
-            else: 
-                risk_level = "High"
-
-            results.append({
-                "churn_probability": round(float(prob), 4),
-                "churn_prediction": int(pred),
-                "risk_level": risk_level
-            
-            })
-        
-        if len(results) == 1:
-            return results[0]
-        
-        return results
-    
-    
     def explain(self, input_df: pd.DataFrame, probability: float):
         """
         Calculates SHAP values, aggregates One-Hot Encoded features back to their original names,
