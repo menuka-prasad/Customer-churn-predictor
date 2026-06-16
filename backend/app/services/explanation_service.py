@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 from collections import defaultdict
 import shap
-from app.services.feature_engineering import engineer_features
+from backend.app.services.feature_engineering import engineer_features
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]

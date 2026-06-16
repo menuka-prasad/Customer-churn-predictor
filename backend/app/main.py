@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from app.services.prediction_service import PredictionService
-from app.services.explanation_service import ExplanationService
+from backend.app.services.prediction_service import PredictionService
+from backend.app.services.explanation_service import ExplanationService
 import pandas as pd
-from app.schemas.customer_data import CustomerData
+from backend.app.schemas.customer_data import CustomerData
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -12,7 +12,7 @@ explanation_service = ExplanationService()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "https://churnly.ultmos.com", "https://customer-churn-predictor-ruby.vercel.app"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -27,7 +27,7 @@ async def predict(customer: CustomerData):
     
     return result
 
-@app.post("/api/explain")
+@app.post("/explain")
 async def explain(customer: CustomerData):
     input_df = pd.DataFrame([customer.dict()])
     

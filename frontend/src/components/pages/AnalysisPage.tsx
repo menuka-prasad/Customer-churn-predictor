@@ -14,12 +14,27 @@ import { usePredictionStore } from '../../context/PredictionStore';
 import { GaugeChart } from '../GaugeChart';
 import Link from 'next/link';
 import { buildRecommendations } from '../../lib/churn';
+import { useEffect, useState } from 'react';
 
-export function AnalysisPage() {
-  const { id } = useParams() as { id?: string };
+export function AnalysisPage({ id }: { id: string }) {
+  
   const router = useRouter();
-  const { getById } = usePredictionStore();
-  const record = id ? getById(id) : undefined;
+  const getById = usePredictionStore((state) => state.getById);
+  // Zustand persist hydration safeguard
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Don't render until we are fully on the client to avoid hydration mismatch 
+  // between the server's empty state and the browser's localStorage
+  if (!isClient) {
+    return <div>Loading analysis...</div>;
+  }
+
+  // Fetch the specific prediction record
+  const record = getById(id);
 
   if (!record) {
     return (
