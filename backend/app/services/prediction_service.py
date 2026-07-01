@@ -17,7 +17,7 @@ model_path = (
     PROJECT_ROOT /
     "backend" /
     "app" /
-    "models" /
+    "ml_models" /
     "artifacts" /
     "churn_pipeline.pkl"
 )
@@ -26,7 +26,7 @@ threshold_path = (
     PROJECT_ROOT /
     "backend" /
     "app" /
-    "models" /
+    "ml_models" /
     "artifacts" /
     "threshold.json"
 )
