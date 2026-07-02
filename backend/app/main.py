@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from backend.app.services.prediction_service import PredictionService
-from backend.app.services.explanation_service import ExplanationService
+from app.services.prediction_service import PredictionService
+from app.services.explanation_service import ExplanationService
 import pandas as pd
-from backend.app.schemas.customer_data import CustomerData
+from app.schemas.customer_data import CustomerData
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -20,7 +20,7 @@ app.add_middleware(
 @app.post("/predict")
 async def predict(customer: CustomerData):
     # convert pydantic model to dataframe
-    input_df = pd.DataFrame([customer.dict()])
+    input_df = pd.DataFrame([customer.model_dump()])
     
     
     result = prediction_service.predict(input_df)
@@ -29,7 +29,7 @@ async def predict(customer: CustomerData):
 
 @app.post("/explain")
 async def explain(customer: CustomerData):
-    input_df = pd.DataFrame([customer.dict()])
+    input_df = pd.DataFrame([customer.model_dump()])
     
     # Normally we'd get the prediction probability, but we can compute it or pass it.
     # For now, we'll just explain. The explanation_service calculates SHAP on the input.

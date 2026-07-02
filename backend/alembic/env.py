@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-# Add the parent directory of 'backend' to sys.path so 'backend.app...' imports work
+# Add the parent directory of 'backend' to sys.path so 'app...' imports work
 root_path = Path(__file__).resolve().parents[2]
 if str(root_path) not in sys.path:
     sys.path.append(str(root_path))
@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from backend.app.db.models import Base
+from app.db.models import Base
 
 # 2. Load your environment variables
 load_dotenv()

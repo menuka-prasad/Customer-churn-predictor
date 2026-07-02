@@ -2,7 +2,7 @@ from sqlalchemy import Column, Text, Float, DateTime, ForeignKey, text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 
-from backend.app.db.database import Base
+from app.db.database import Base
 
 class Prediction(Base):
     __tablename__ = "predictions"

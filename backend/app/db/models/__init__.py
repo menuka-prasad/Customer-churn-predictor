@@ -1,5 +1,5 @@
 # 1. Import the Base
-from backend.app.db.database import Base
+from app.db.database import Base
 
 # 2. Import all your model classes here
 from .user import User
