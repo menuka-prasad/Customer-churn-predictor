@@ -1,9 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from app.services.prediction_service import PredictionService
 from app.services.explanation_service import ExplanationService
 import pandas as pd
 from app.schemas.customer_data import CustomerData
 from fastapi.middleware.cors import CORSMiddleware
+from app.dependencies import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 
 app = FastAPI()
 
@@ -16,6 +19,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/health/db")
+async def health_db(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(text("SELECT 1"))
+    return {"db connected": result.scalar() == 1}
+
 
 @app.post("/predict")
 async def predict(customer: CustomerData):

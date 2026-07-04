@@ -8,11 +8,12 @@ import matplotlib.pyplot as plt
 
 # Add project root to sys.path to allow imports from backend
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.append(str(PROJECT_ROOT))
+BACKEND_DIR = PROJECT_ROOT / 'backend'
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.append(str(BACKEND_DIR))
     
 
-from backend.app.services.feature_engineering import (
+from app.services.feature_engineering import (
     engineer_features
 )
 

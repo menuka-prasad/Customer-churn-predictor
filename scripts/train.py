@@ -3,8 +3,9 @@ from pathlib import Path
 
 # Add project root to sys.path to allow imports from backend
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.append(str(PROJECT_ROOT))
+BACKEND_DIR = PROJECT_ROOT / 'backend'
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.append(str(BACKEND_DIR))
 
 import pandas as pd
 import joblib
@@ -25,11 +26,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-from backend.app.services.feature_engineering import (
+from app.services.feature_engineering import (
     engineer_features
 )
 
-from backend.app.services.preprocessing import (
+from app.services.preprocessing import (
     create_preprocessor
 )
 
