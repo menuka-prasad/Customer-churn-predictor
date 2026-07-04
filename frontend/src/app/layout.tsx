@@ -13,10 +13,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
+import { generateMetadata } from "@/lib/generate-metadata";
+
+export const metadata: Metadata = generateMetadata({
   title: "Churn predictor",
   description: "Based on Telco Data set",
-};
+  canonicalUrl: "/",
+});
 
 export default function RootLayout({
   children,
