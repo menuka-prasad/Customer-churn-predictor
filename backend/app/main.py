@@ -1,17 +1,16 @@
 from fastapi import FastAPI, Depends
-from app.services.prediction_service import PredictionService
-from app.services.explanation_service import ExplanationService
-import pandas as pd
-from app.schemas.customer_data import CustomerData
 from fastapi.middleware.cors import CORSMiddleware
 from app.dependencies import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.v1.router import api_router
+from app.core.config import settings
+
 
 app = FastAPI()
 
-prediction_service = PredictionService()
-explanation_service = ExplanationService()
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,24 +25,7 @@ async def health_db(db: AsyncSession = Depends(get_db)):
     return {"db connected": result.scalar() == 1}
 
 
-@app.post("/predict")
-async def predict(customer: CustomerData):
-    # convert pydantic model to dataframe
-    input_df = pd.DataFrame([customer.model_dump()])
-    
-    
-    result = prediction_service.predict(input_df)
-    
-    return result
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
-@app.post("/explain")
-async def explain(customer: CustomerData):
-    input_df = pd.DataFrame([customer.model_dump()])
-    
-    # Normally we'd get the prediction probability, but we can compute it or pass it.
-    # For now, we'll just explain. The explanation_service calculates SHAP on the input.
-    factors = explanation_service.explain(input_df, 0.5)
-    
-    return {"shap_values": factors}
 
 
